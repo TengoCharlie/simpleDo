@@ -1,4 +1,5 @@
 import { createContext, useContext, useState, useEffect } from "react";
+import { todoApi } from "../services/api";
 
 // Create a context for todos
 export const TodoContext = createContext();
@@ -14,53 +15,77 @@ export const useTodoContext = () => {
 
 // Provider component that wraps app and provides todo context
 export const TodoProvider = ({ children }) => {
-  // useState Hook: Manages the todos state
-  const [todos, setTodos] = useState(() => {
-    // Initialize state from localStorage if available
-    const savedTodos = localStorage.getItem("todos");
-    return savedTodos ? JSON.parse(savedTodos) : [];
-  });
+  const [todos, setTodos] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  // useEffect Hook: Saves todos to localStorage whenever they change
+  // Fetch todos on mount
   useEffect(() => {
-    localStorage.setItem("todos", JSON.stringify(todos));
-  }, [todos]); // Dependency array: effect runs when todos change
+    const fetchTodos = async () => {
+      try {
+        const data = await todoApi.getAllTodos();
+        setTodos(data);
+      } catch (err) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchTodos();
+  }, []);
 
   // CRUD Operations
-  const addTodo = (title, content) => {
-    setTodos((prevTodos) => [
-      {
-        id: Date.now(),
+  const addTodo = async (title, content) => {
+    try {
+      const newTodo = await todoApi.addTodo({
         title,
         content,
-        createdAt: new Date().toISOString(),
-        completed: false,
-      },
-      ...prevTodos,
-    ]);
+      });
+      setTodos((prevTodos) => [newTodo, ...prevTodos]);
+    } catch (err) {
+      setError(err.message);
+    }
   };
 
-  const updateTodo = (id, updates) => {
-    setTodos((prevTodos) =>
-      prevTodos.map((todo) => (todo.id === id ? { ...todo, ...updates } : todo))
-    );
+  const updateTodo = async (id, updates) => {
+    try {
+      const updatedTodo = await todoApi.updateTodo(id, updates);
+      setTodos((prevTodos) =>
+        prevTodos.map((todo) => (todo.id === id ? updatedTodo : todo))
+      );
+    } catch (err) {
+      setError(err.message);
+    }
   };
 
-  const deleteTodo = (id) => {
-    setTodos((prevTodos) => prevTodos.filter((todo) => todo.id !== id));
+  const deleteTodo = async (id) => {
+    try {
+      await todoApi.deleteTodo(id);
+      setTodos((prevTodos) => prevTodos.filter((todo) => todo.id !== id));
+    } catch (err) {
+      setError(err.message);
+    }
   };
 
-  const toggleComplete = (id) => {
-    setTodos((prevTodos) =>
-      prevTodos.map((todo) =>
-        todo.id === id ? { ...todo, completed: !todo.completed } : todo
-      )
-    );
+  const toggleComplete = async (id) => {
+    try {
+      const todo = todos.find((t) => t.id === id);
+      const updatedTodo = await todoApi.updateTodo(id, {
+        completed: !todo.completed,
+      });
+      setTodos((prevTodos) =>
+        prevTodos.map((todo) => (todo.id === id ? updatedTodo : todo))
+      );
+    } catch (err) {
+      setError(err.message);
+    }
   };
 
   // Value object to be provided to consumers
   const value = {
     todos,
+    loading,
+    error,
     addTodo,
     updateTodo,
     deleteTodo,
