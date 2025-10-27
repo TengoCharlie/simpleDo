@@ -51,7 +51,7 @@ export const TodoProvider = ({ children }) => {
     try {
       const updatedTodo = await todoApi.updateTodo(id, updates);
       setTodos((prevTodos) =>
-        prevTodos.map((todo) => (todo.id === id ? updatedTodo : todo))
+        prevTodos.map((todo) => (todo._id === id ? updatedTodo : todo))
       );
     } catch (err) {
       setError(err.message);
@@ -61,7 +61,7 @@ export const TodoProvider = ({ children }) => {
   const deleteTodo = async (id) => {
     try {
       await todoApi.deleteTodo(id);
-      setTodos((prevTodos) => prevTodos.filter((todo) => todo.id !== id));
+      setTodos((prevTodos) => prevTodos.filter((todo) => todo._id !== id));
     } catch (err) {
       setError(err.message);
     }
@@ -69,12 +69,12 @@ export const TodoProvider = ({ children }) => {
 
   const toggleComplete = async (id) => {
     try {
-      const todo = todos.find((t) => t.id === id);
+      const todo = todos.find((t) => t._id === id);
       const updatedTodo = await todoApi.updateTodo(id, {
         completed: !todo.completed,
       });
       setTodos((prevTodos) =>
-        prevTodos.map((todo) => (todo.id === id ? updatedTodo : todo))
+        prevTodos.map((todo) => (todo._id === id ? updatedTodo : todo))
       );
     } catch (err) {
       setError(err.message);

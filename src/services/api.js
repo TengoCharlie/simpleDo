@@ -6,13 +6,13 @@ export const todoApi = {
     return response.json();
   },
 
-  async addTodo(text) {
+  async addTodo({ title, content }) {
     const response = await fetch(`${API_URL}/todos`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ text }),
+      body: JSON.stringify({ title, content }),
     });
     return response.json();
   },
