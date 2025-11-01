@@ -10,8 +10,9 @@ const TodoCard = ({ todo }) => {
   // useRef Hook: References the card for click outside detection
   const cardRef = useRef(null);
 
-  // useContext Hook: Accessing the todo context
+  // useContext Hook: Accessing the todo context and resolving the document id ahead of time
   const { updateTodo, deleteTodo, toggleComplete } = useTodoContext();
+  const todoId = todo._id || todo.id;
 
   // useEffect Hook: Handles click outside to save edits
   useEffect(() => {
@@ -32,7 +33,7 @@ const TodoCard = ({ todo }) => {
 
   const handleSave = () => {
     if (editedTitle.trim() || editedContent.trim()) {
-      updateTodo(todo.id, {
+      updateTodo(todoId, {
         title: editedTitle.trim(),
         content: editedContent.trim(),
       });
@@ -75,19 +76,19 @@ const TodoCard = ({ todo }) => {
             <h3>{todo.title}</h3>
             <div className="todo-actions">
               <button
-                onClick={() => toggleComplete(todo.id)}
+                onClick={() => toggleComplete(todoId)}
                 className="action-btn"
               >
-                {todo.completed ? "✓" : "○"}
+                {todo.completed ? "�o"" : "�-<"}
               </button>
               <button onClick={() => setIsEditing(true)} className="action-btn">
-                ✎
+                �oZ
               </button>
               <button
-                onClick={() => deleteTodo(todo.id)}
+                onClick={() => deleteTodo(todoId)}
                 className="action-btn delete"
               >
-                ×
+                A-
               </button>
             </div>
           </div>
